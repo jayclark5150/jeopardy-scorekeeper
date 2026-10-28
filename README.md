@@ -2,6 +2,8 @@
 
 A phone-friendly score tracker for playing along while you watch Jeopardy on TV.
 
+## Features
+
 - Right column adds clue values, Wrong column subtracts them
 - Toggle between Jeopardy! ($200 to $1,000) and Double Jeopardy! ($400 to $2,000)
 - Daily Double wager with a Max button (your score or the top clue, whichever is higher)
@@ -11,6 +13,16 @@ A phone-friendly score tracker for playing along while you watch Jeopardy on TV.
 
 ## Use it
 
-It is a single static file with no build step. Open `index.html` in a browser, or host the repo with GitHub Pages and open the link on your phone.
+It is a single static file with no build step. Open `index.html` in a browser, or host the repo with GitHub Pages (Settings, then Pages, deploy from the `main` branch) and open the link on your phone.
 
 The score is stored in each browser's local storage, so a phone and a laptop keep separate scores.
+
+## Files
+
+- `index.html` is the whole app (HTML, CSS, and JavaScript)
+- `LICENSE` is the MIT license
+- `.gitignore` skips OS, editor, and build files
+
+## License
+
+Released under the [MIT License](LICENSE).
