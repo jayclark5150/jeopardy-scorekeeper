@@ -96,6 +96,10 @@
   }
   .dd-btn:active { transform: scale(0.98); }
   .dd-btn.final { background: var(--ink); color: var(--bg); }
+  .dd-btn { line-height: 1.1; padding: 6px 8px; }
+  .dd-btn small { display: block; font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; margin-top: 2px; }
+  .dd-btn:disabled { opacity: .45; cursor: default; }
+  .dd-btn:disabled:active { transform: none; }
   .special { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .special[hidden] { display: none; }
 
@@ -213,6 +217,9 @@
   var undoBtn = $('undoBtn'), resetBtn = $('resetBtn'), resetTimer = null;
 
   var mode = 'dd';
+  var DD_LIMIT = { 1: 1, 2: 2 };
+  function ddUsed(r) { return state.log.filter(function (e) { return e.dd && e.r === r; }).length; }
+  function ddLeft() { return Math.max(0, DD_LIMIT[state.round] - ddUsed(state.round)); }
   function roundMax() { return VALUES[state.round][4]; }
   function maxWager() { return mode === 'final' ? Math.max(state.score, 0) : Math.max(state.score, roundMax()); }
 
@@ -250,11 +257,14 @@
     });
     logEmpty.hidden = state.log.length > 0;
     undoBtn.disabled = state.log.length === 0;
+    var left = ddLeft();
+    $('ddBtn').disabled = left <= 0;
+    $('ddBtn').innerHTML = 'Daily Double<small>' + (left > 0 ? left + ' left this round' : 'all used this round') + '</small>';
   }
 
-  function apply(delta, kind) {
+  function apply(delta, kind, isDD) {
     state.score += delta;
-    state.log.push({ d: delta, k: kind });
+    state.log.push({ d: delta, k: kind, dd: !!isDD, r: state.round });
     save(); buzz(); render();
   }
 
@@ -281,7 +291,8 @@
     var w = readWager();
     var final = mode === 'final';
     var problem = '';
-    if (final && state.score <= 0) problem = 'You need a positive score to play Final Jeopardy.';
+    if (!final && ddLeft() <= 0) problem = 'No Daily Doubles left in this round.';
+    else if (final && state.score <= 0) problem = 'You need a positive score to play Final Jeopardy.';
     else if (rawVal === '' || (!final && w === 0)) problem = 'Enter a wager first.';
     else if (w > maxWager()) problem = 'Wager can’t exceed ' + money(maxWager()) + '.';
     if (problem) {
@@ -290,11 +301,12 @@
       wagerInput.focus();
       return;
     }
-    if (w > 0) apply(sign * w, (final ? 'Final Jeopardy' : 'Daily Double') + (sign > 0 ? ' right' : ' wrong'));
+    if (w > 0) apply(sign * w, (final ? 'Final Jeopardy' : 'Daily Double') + (sign > 0 ? ' right' : ' wrong'), !final);
     closeWager();
   }
 
   function openWager(m) {
+    if (m === 'dd' && ddLeft() <= 0) return;
     mode = m;
     $('wagerTitle').textContent = m === 'final' ? 'Final Jeopardy wager' : 'Daily Double wager';
     wagerInput.value = '';
